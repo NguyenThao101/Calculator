@@ -1,0 +1,149 @@
+﻿@page "/"
+@using System.Collections
+@rendermode InteractiveServer
+<MudGrid>
+    <MudItem>
+        <MudCard style="border:1px solid #666 " onkeydown="@HandleKeyDown" >
+            <MudCardContent>
+                <MudTextField T="string" @bind-Value="DisplayValue" ReadOnly Immediate id="ketqua"  />
+            </MudCardContent>
+            <MudCardContent>
+                <MudButton Variant="Variant.Filled" class="button"  @onclick="Clear">CE</MudButton>
+                <MudButton Variant="Variant.Filled" class="button"  @onclick="Delete">DE</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('%')">%</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('+')">+</MudButton>
+            </MudCardContent>
+
+            <MudCardContent>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('7')">7</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('8')">8</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('9')">9</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('-')">-</MudButton>
+            </MudCardContent>
+
+            <MudCardContent>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('4')">4</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('5')">5</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('6')">6</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('*')">*</MudButton>
+            </MudCardContent>
+
+            <MudCardContent>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('1')">1</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('2')">2</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('3')">3</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('/')">/</MudButton>
+            </MudCardContent>
+
+            <MudCardContent>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('0')">0</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="ToggleSign">+/-</MudButton>
+                <MudButton Variant="Variant.Filled" class="button" @onclick="() => Input('.')">.</MudButton>
+                <MudButton  Variant="Variant.Filled" class="button" @onclick="Result">=</MudButton>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+@code {
+    private string currentInput = string.Empty;
+    private string DisplayValue = "0";
+    private string DisplayValue1 = "0";
+    private double result = 0;
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+    private List<string> buttonColors = new List<string>();
+    // nhập từ bàn phím
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        char key = (char)e.Key.GetHashCode(); // Chuyển đổi phím thành ký tự
+        if (e.Key.Length == 1 && e.Key[0] >= '0' && e.Key[0] <= '9' || "+-*/%.".Contains(e.Key[0]))
+    {
+        Input(e.Key[0]);
+            StateHasChanged();
+    }
+    else if (e.Key == "Enter" || e.Key == "=")
+    {
+        Result();
+        StateHasChanged();
+    }
+    else if (e.Key == "Backspace")
+    {
+        Delete();
+        
+    }
+}  
+// tạo list màu random
+    private List<string> GenerateRandomPastelColors(int numColors)
+    {
+        Random random = new Random();
+        List<string> colors = new List<string>();
+
+        for (int i = 0; i < numColors; i++)
+        {
+            int r = (random.Next(128, 256) + 255) / 2;
+            int g = (random.Next(128, 256) + 255) / 2;
+            int b = (random.Next(128, 256) + 255) / 2;
+            string color = String.Format("#{0:X2}{1:X2}{2:X2}", r, g, b);
+            colors.Add(color);
+        }
+        return colors;
+    }
+
+    private void Input(char value)
+    {
+        currentInput += value;
+        DisplayValue = currentInput;
+        StateHasChanged();
+    }
+    private void Clear()
+    {
+        currentInput = string.Empty;
+        DisplayValue = "0";
+    }
+
+    private void Delete()
+    {
+        if (!string.IsNullOrEmpty(currentInput))
+        {
+            currentInput = currentInput.Remove(currentInput.Length - 1);
+            DisplayValue = string.IsNullOrEmpty(currentInput) ? "0" : currentInput;
+        }
+    }
+
+    private void ToggleSign()
+    {
+        if (!string.IsNullOrEmpty(currentInput))
+        {
+            if (currentInput.StartsWith("-"))
+            {
+                currentInput = currentInput.Substring(1);
+            }
+            else
+            {
+                currentInput = "-" + currentInput;
+            }
+            DisplayValue = currentInput;
+            StateHasChanged();
+        }
+    }
+
+    private void Result()
+    {
+        try
+        {
+            result = Convert.ToDouble(new System.Data.DataTable().Compute(currentInput, null));
+            DisplayValue = result.ToString();
+            currentInput = result.ToString();
+            StateHasChanged();
+        }
+        catch
+        {
+            DisplayValue = "Error";
+            currentInput = string.Empty;
+        }
+    }
+}
+
+
